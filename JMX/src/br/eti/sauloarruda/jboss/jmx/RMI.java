@@ -1,5 +1,6 @@
 package br.eti.sauloarruda.jboss.jmx;
 
+import java.util.HashMap;
 import javax.management.MBeanInfo;
 import javax.management.MBeanOperationInfo;
 import javax.management.MBeanParameterInfo;
@@ -13,13 +14,12 @@ public class RMI {
         InitialContext ic = new InitialContext();
         RMIAdaptor server = (RMIAdaptor) ic.lookup("jmx/invoker/RMIAdaptor");
         
-        // Get the MBeanInfo for the JNDIView MBean
-        ObjectName name = new ObjectName("jboss:service=JNDIView");
+        ObjectName name = new ObjectName("br.eti.sauloarruda:service=JNDIMap");
         MBeanInfo  info = server.getMBeanInfo(name);
-        System.out.println("JNDIView Class: " + info.getClassName());
+        System.out.println("JNDIMap Class: " + info.getClassName());
 
         MBeanOperationInfo[] opInfo = info.getOperations();
-        System.out.println("JNDIView Operations: ");
+        System.out.println("JNDIMap Operations: ");
         for(int o = 0; o < opInfo.length; o ++) {
             MBeanOperationInfo op = opInfo[o];
 
@@ -47,11 +47,7 @@ public class RMI {
             System.out.println(")");
         }
         
-        // Invoke the list(boolean) op
-        String[] sig    = {"boolean"};
-        Object[] opArgs = {Boolean.TRUE};
-        Object   result = server.invoke(name, "list", opArgs, sig);
-
-        System.out.println("JNDIView.list(true) output:\n"+result);
+        Object   result = server.invoke(name, "list", null, null);
+        System.out.println("JNDIMap.list() output:\n"+result);
     }
 }

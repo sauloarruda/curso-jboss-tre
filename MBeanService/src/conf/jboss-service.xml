@@ -1,0 +1,8 @@
+<!-- The SAR META-INF/jboss-service.xml descriptor -->
+<server>
+    <mbean code="br.eti.sauloarruda.jboss.mbean.JNDIMap" 
+           name="br.eti.sauloarruda:service=JNDIMap">
+        <attribute name="JndiName">inmemory/maps/MapTest</attribute>
+        <depends>jboss:service=Naming</depends>
+    </mbean>
+</server> 
