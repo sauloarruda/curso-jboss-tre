@@ -4,7 +4,8 @@ import java.util.HashMap;
 import javax.naming.InitialContext;
 import javax.naming.Name;
 import javax.naming.NamingException;
-import org.jboss.naming.NonSerializableFactory;
+import org.jboss.util.naming.NonSerializableFactory;
+//import org.jboss.naming.NonSerializableFactory;
 
 public class JNDIMap implements JNDIMapMBean
 {
