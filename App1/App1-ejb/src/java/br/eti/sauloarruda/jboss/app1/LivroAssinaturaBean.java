@@ -31,5 +31,37 @@ public class LivroAssinaturaBean implements LivroAssinatura {
         }
         return assinaturasStr;
     }
+
+    public String getName() {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    public int getState() {
+     return 1;
+    }
+
+    public String getStateString() {
+       return "OK";
+    }
+
+    public void jbossInternalLifecycle(String string) throws Exception {
+        
+    }
+
+    public void create() throws Exception {
+        
+    }
+
+    public void destroy() {
+        
+    }
+
+    public void start() throws Exception {
+        
+    }
+
+    public void stop() {
+        
+    }
     
 }

@@ -2,67 +2,54 @@ package br.eti.sauloarruda.bingo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OrderBy;
-import javax.persistence.Transient;
 
-/**
- *
- * @author sauloarruda
- */
 @Entity
 public class Cartela implements Serializable {
-
     private static final long serialVersionUID = 1L;
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    private Boolean vencedor = Boolean.FALSE;
     @ManyToOne
-    @JoinColumn(name = "bingo_id", nullable = false)
     private Bingo bingo;
-    @OneToMany(fetch= FetchType.EAGER)
+    private Boolean vencedor = Boolean.FALSE;
+    
+    @OneToMany(cascade= CascadeType.ALL, fetch= FetchType.EAGER)
     @OrderBy("numero")
-    private Set<CartelaNumero> numeros = new HashSet<CartelaNumero>();
+    private List<CartelaNumero> numeros = new ArrayList<CartelaNumero>();
 
-    Cartela() {
-    }
-
+    public Cartela() {}
+    
     Cartela(Bingo bingo) {
         this.bingo = bingo;
     }
-
-    public Set<CartelaNumero> getNumeros() {
+    
+    public List<CartelaNumero> getNumeros() {
         return numeros;
     }
     
-    public Bingo getBingo() {
-        return bingo;
-    }
-
     public Integer getId() {
         return id;
     }
     
-    void setVencedor(boolean vencedor) {
-        this.vencedor = vencedor;
-    }
-    
-    public boolean isVencedor() {
+    public Boolean getVencedor() {
         return vencedor;
     }
 
+    void vencedor() {
+        vencedor = Boolean.TRUE;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;
@@ -87,4 +74,5 @@ public class Cartela implements Serializable {
     public String toString() {
         return "br.eti.sauloarruda.bingo.Cartela[ id=" + id + " ]";
     }
+    
 }

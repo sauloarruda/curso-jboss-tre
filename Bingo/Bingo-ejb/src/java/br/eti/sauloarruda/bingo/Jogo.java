@@ -1,21 +1,18 @@
 package br.eti.sauloarruda.bingo;
 
-import javax.ejb.Remote;
+import javax.ejb.Local;
 
-/**
- *
- * @author sauloarruda
- */
-@Remote
+@Local
 public interface Jogo {
 
-    BingoNumero sortearNumero(Integer bingoId);
+    Bingo novoBingo();
+
+    public Bingo buscarBingo(Integer id);
+
+    public Cartela novaCartela(Integer bingoId);
+
+    public Cartela buscarCartela(Integer id);
+
+    public BingoNumero sortear(Integer id);
     
-    Bingo novoJogo();
-    
-    Bingo buscarJogo(Integer id);
-        
-    Cartela novaCartela(Integer bingoId);
-    
-    Cartela buscarCartela(Integer id);
 }

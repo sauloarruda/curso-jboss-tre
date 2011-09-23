@@ -1,25 +1,18 @@
 package br.eti.sauloarruda.bingo;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
-import javax.persistence.OrderBy;
 import javax.persistence.Transient;
 
-/**
- *
- * @author sauloarruda
- */
 @Entity
 public class Bingo implements Serializable {
 
@@ -27,58 +20,35 @@ public class Bingo implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
-    @OneToMany(fetch= FetchType.EAGER, mappedBy="bingo")
-    @OrderBy("ordem")
-    private Set<BingoNumero> numeros;
-    @Transient
-    private List<Integer> numerosList;
+    @OneToMany(cascade= CascadeType.ALL)
+    private List<BingoNumero> numeros = new ArrayList<BingoNumero>();
     @OneToMany(mappedBy="bingo")
-    private Set<Cartela> cartelas;
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="cartela_vencedora_id")
-    private Cartela vencedora;
+    private List<Cartela> cartelas;
+    @Transient
+    private List<Cartela> vencedores;
 
-    Bingo() {}
-    
     public Integer getId() {
         return id;
     }
 
-    public Set<BingoNumero> getNumeros() {
+    public List<BingoNumero> getNumeros() {
         return numeros;
     }
 
-    public boolean isSorteado(Integer numero) {
-        return getNumerosSorteados().contains(numero);
-    }
-    
-    public Integer ordemUltimo() {
-        return getNumerosSorteados().size();
-    }
-    
-    void setVencedora(Cartela vencedora) {
-        this.vencedora = vencedora;
-    }
-
-    public Cartela getVencedora() {
-        return vencedora;
-    }
-    
-    public List<Integer> getNumerosSorteados() {
-        if (numerosList == null) {
-            numerosList = new ArrayList<Integer>();
-            Iterator<BingoNumero> it = numeros.iterator();
-            while (it.hasNext()) {
-                numerosList.add(it.next().getNumero());
-            }
-        }
-        return numerosList;
-    }
-    
-    Set<Cartela> getCartelas() {
+    public List<Cartela> getCartelas() {
         return cartelas;
     }
-
+    
+    public List<Cartela> getVencedores() {
+        vencedores = new ArrayList<Cartela>();
+        for (Cartela cartela : cartelas) {
+            if (cartela.getVencedor()) {
+                vencedores.add(cartela);
+            }
+        }
+        return vencedores;
+    }
+    
     @Override
     public int hashCode() {
         int hash = 0;

@@ -3,105 +3,112 @@ package br.eti.sauloarruda.bingo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
+import javax.ejb.Stateful;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-/**
- *
- * @author sauloarruda
- */
-@Stateless(name = "jogo")
+@Stateless
 public class JogoBean implements Jogo {
 
     @PersistenceContext
     private EntityManager em;
 
     @Override
-    public BingoNumero sortearNumero(Integer bingoId) {
-        Bingo bingo = buscarJogo(bingoId);
-        List<Integer> disponiveis = new ArrayList<Integer>();
-        for (int i = 1; i < 30; i++) {
-            if (!bingo.isSorteado(i)) {
-                disponiveis.add(i);
-            }
-        }
-        if (disponiveis.size() == 0) {
-            return null;
-        }
-        int random = new Random().nextInt(disponiveis.size());
-        BingoNumero numero = new BingoNumero(bingo, disponiveis.get(random));
-        em.persist(numero);
-        bingo.getNumerosSorteados().add(numero.getNumero());
-        bingo.getNumeros().add(numero);
-        marcarCartelas(bingo);
-        return numero;
-    }
-
-    private void marcarCartelas(Bingo bingo) {
-        for (Cartela cartela : bingo.getCartelas().toArray(new Cartela[bingo.getCartelas().size()])) {
-            int qtdSorteados = 0;
-            for (CartelaNumero cartelaNumero : cartela.getNumeros().toArray(new CartelaNumero[cartela.getNumeros().size()])) {
-               if (bingo.getNumerosSorteados().contains(cartelaNumero.getNumero())) {
-                   cartelaNumero.setSorteado(true);
-                   em.persist(cartelaNumero);
-               }
-               if (cartelaNumero.isSorteado()) {
-                   qtdSorteados++;
-               }
-            }
-            if (qtdSorteados == 9) {
-                cartela.setVencedor(true);
-                em.persist(cartela);
-                bingo.setVencedora(cartela);
-                em.persist(bingo);
-            }
-        }
-    }
-    
-    public Cartela novaCartela(Integer bingoId) {
-        Cartela cartela = new Cartela(buscarJogo(bingoId));
-        em.persist(cartela);
-        for (int i = 0; i < 9; i++) {
-            Integer random = sortearNumero(i, cartela.getNumeros());
-            CartelaNumero numero = new CartelaNumero(cartela, random);
-            em.persist(numero);
-            cartela.getNumeros().add(numero);
-        }
-        cartela = em.find(Cartela.class, cartela.getId()); // reorder
-        return cartela;
-    }
-
-    private Integer sortearNumero(int i, Set<CartelaNumero> numeros) {
-        Integer random = new Random().nextInt(8);
-        if (i > 2 && i < 6) {
-            random = random + 11;
-        } else if (i > 5) {
-            random = random + 21;
-        } else {
-            random++;
-        }
-        
-        for (CartelaNumero numero: numeros.toArray(new CartelaNumero[numeros.size()])) {
-            if (numero.getNumero() == random) {
-                random = sortearNumero(i, numeros);
-            }
-        }
-        return random;
-    }
-
-    public Bingo novoJogo() {
+    public Bingo novoBingo() {
         Bingo bingo = new Bingo();
         em.persist(bingo);
         return bingo;
     }
 
-    public Bingo buscarJogo(Integer id) {
-        return em.find(Bingo.class, id);
+    public Bingo buscarBingo(Integer id) {
+        Bingo bingo = em.find(Bingo.class, id);
+        bingo.getNumeros().iterator(); // EAGER Loading
+        bingo.getVencedores().iterator();
+        return bingo;
+    }
+
+    public Cartela novaCartela(Integer bingoId) {
+        Cartela cartela = new Cartela(buscarBingo(bingoId));
+        for (int i = 0; i < 9; i++) {
+            cartela.getNumeros().add(
+                    new CartelaNumero(cartela, sortearNumero(cartela, i)));
+        }
+
+        em.persist(cartela);
+        cartela = buscarCartela(cartela.getId()); // reordenar marotamente...
+        return cartela;
+    }
+
+    private Integer sortearNumero(Cartela cartela, int i) {
+        Integer numero;
+        Integer random = new Random().nextInt(9);
+        if (i > 5) {
+            numero = random + 21;
+        } else if (i > 2) {
+            numero = random + 11;
+        } else {
+            numero = random + 1;
+        }
+
+        // Garante que não vai repetir
+        for (CartelaNumero cartelaNumero : cartela.getNumeros()) {
+            if (cartelaNumero.getNumero() == numero) {
+                numero = sortearNumero(cartela, i);
+            }
+        }
+
+        return numero;
     }
 
     public Cartela buscarCartela(Integer id) {
         return em.find(Cartela.class, id);
+    }
+
+    public BingoNumero sortear(Integer id) {
+        Bingo bingo = buscarBingo(id);
+        BingoNumero numero = sortearNumero(bingo);
+        atualizarCartelas(numero);
+        em.persist(bingo);
+        return numero;
+    }
+    
+    private BingoNumero sortearNumero(Bingo bingo) {
+        List<Integer> indisponiveis = new ArrayList<Integer>();
+        for (BingoNumero bingoNumero : bingo.getNumeros()) {
+            indisponiveis.add(bingoNumero.getNumero());
+        }
+
+        List<Integer> disponiveis = new ArrayList<Integer>();
+        for (int i = 0; i < 29; i++) {
+            if (!indisponiveis.contains(i)) {
+                disponiveis.add(i);
+            }
+        }
+        
+        Integer random = new Random().nextInt(disponiveis.size());
+        BingoNumero bingoNumero = new BingoNumero(bingo, 
+                disponiveis.get(random));
+        bingo.getNumeros().add(bingoNumero);
+        return bingoNumero;
+    }
+    
+    private void atualizarCartelas(BingoNumero bingoNumero) {
+        for (Cartela cartela : bingoNumero.getBingo().getCartelas()) {
+            int qtdSorteados = 0;
+            for (CartelaNumero numero : cartela.getNumeros()) {
+                if (numero.getNumero().equals(bingoNumero.getNumero())) {
+                    numero.sorteado();
+                    em.persist(numero);
+                }
+                if (numero.getSorteado()) {
+                    qtdSorteados++;
+                }
+            }
+            if (qtdSorteados == 9) {
+                cartela.vencedor();
+                em.persist(cartela);
+            }
+        }
     }
 }

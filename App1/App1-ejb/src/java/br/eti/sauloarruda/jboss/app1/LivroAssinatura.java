@@ -14,5 +14,4 @@ public interface LivroAssinatura {
     void assinar(String nome);
     
     List<String> assinantes();
-    
 }

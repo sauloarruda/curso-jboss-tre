@@ -1,19 +1,12 @@
 package br.eti.sauloarruda.bingo;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-/**
- *
- * @author sauloarruda
- */
 @Entity
 public class BingoNumero implements Serializable {
     private static final long serialVersionUID = 1L;
@@ -21,32 +14,31 @@ public class BingoNumero implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     
-    private Integer ordem;
-    private Integer numero;
     @ManyToOne
-    @JoinColumn(name="bingo_id", nullable=false)
     private Bingo bingo;
-
-    BingoNumero() {}
+    
+    private Integer numero;
+    
+    public BingoNumero() {
+    }
     
     BingoNumero(Bingo bingo, Integer numero) {
-        this.ordem = bingo.ordemUltimo();
         this.bingo = bingo;
         this.numero = numero;
+    } 
+
+    public Integer getId() {
+        return id;
+    }
+    
+    public Integer getNumero() {
+        return numero;
     }
     
     public Bingo getBingo() {
         return bingo;
     }
     
-    public Integer getId() {
-        return id;
-    }
-
-    public Integer getNumero() {
-        return numero;
-    }
-        
     @Override
     public int hashCode() {
         int hash = 0;
@@ -69,7 +61,7 @@ public class BingoNumero implements Serializable {
 
     @Override
     public String toString() {
-        return "br.eti.sauloarruda.bingo.BingoSorteio[ id=" + id + " ]";
+        return "br.eti.sauloarruda.bingo.BingoNumero[ id=" + id + " ]";
     }
     
 }
